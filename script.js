@@ -22,6 +22,9 @@ function createCalendar() {
         }
         var daysInMonth = new Date(year, month + 1, 0).getDate();
 
+        // Získání počtu týdnů v měsíci
+        var weeksInMonth = Math.ceil((firstDay + daysInMonth) / 7);
+
         // Vytvoření hlavičky kalendáře
         calendarHeader.innerHTML = "";
         for (var i = 0; i < 7; i++) {
@@ -33,11 +36,11 @@ function createCalendar() {
         // Vytvoření dnů v kalendáři
         calendarBody.innerHTML = "";
         var day = 1;
-        for (var i = 0; i < 6; i++) {
+        for (var i = 0; i < weeksInMonth; i++) {
             var row = document.createElement("tr");
 
             for (var j = 0; j < 7; j++) {
-                if (i === 0 && j < firstDay) {
+                if ((i === 0 && j < firstDay) || (day > daysInMonth)) {
                     var cell = document.createElement("td");
                     row.appendChild(cell);
                 } else if (day > daysInMonth) {
@@ -48,7 +51,7 @@ function createCalendar() {
                     dayNumber.textContent = day;
 
                     // Přidání třídy "note-circle", pokud má den poznámku
-                    var key = `${month + 1}-${day}`;
+                    var key = `${day}.${month + 1}.${year}`;
                     if (names.hasOwnProperty(key)) {
                         dayNumber.classList.add("note-circle");
                     }
@@ -111,22 +114,42 @@ function createCalendar() {
         createMonthCalendar(selectedYear, selectedMonth);
     }
 
-    // Funkce pro zobrazení detailů dne
     function showDayDetails() {
         var day = this.textContent;
         var month = currentMonth;
 
-        const key = `${month + 1}-${day}`;
+        const key = `${day}.${month + 1}.${currentYear}`;
+
+        // Získání poznámek pro daný den
+        var note = names[key];
 
         // Vytvoření vysouvacího okna s informacemi o dni
-        if (names[key]) { 
-        dayDetails.innerHTML = names[key];
-        dayDetails.style.display = "block";
-            } else {
-                dayDetails.innerHTML = "";
-                var dayDetailsElement = document.querySelector("#day-details");
-                dayDetailsElement.style.display = "none";
-            }
+        var dayDetailsElement = document.querySelector("#day-details");
+        dayDetailsElement.innerHTML = "";
+
+        if (Array.isArray(note)) {
+            note.forEach(function (n) {
+                // Vytvoření div elementu pro poznámku
+                var noteDiv = document.createElement("div");
+                noteDiv.textContent = n.name;
+                dayDetailsElement.appendChild(noteDiv);
+
+                // Vytvoření oddělovací linie
+                var hr = document.createElement("hr");
+                dayDetailsElement.appendChild(hr);
+            });
+
+            dayDetailsElement.style.display = "block";
+        } else if (note) {
+            // Vytvoření div elementu pro poznámku
+            var noteDiv = document.createElement("div");
+            noteDiv.textContent = note.name;
+            dayDetailsElement.appendChild(noteDiv);
+
+            dayDetailsElement.style.display = "block";
+        } else {
+            dayDetailsElement.style.display = "none";
+        }
     }
 
     // Přidání posluchačů událostí na tlačítka
@@ -142,20 +165,11 @@ var months = [
 // Volání funkce pro vytvoření kalendáře po načtení stránky
 window.addEventListener("DOMContentLoaded", createCalendar);
 
-
-function getNameForDate(date, names) {
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-
-    const key = `${month}-${day}`;
-    return names[key] || "No name found";
-}
-
 // Kalendář se jmény
 const names = {
-    "6-2": "Jarmil",
-    "7-3": "Tamara",
-    "8-6": "Norbert",
-    "9-11": "Bruno",
-    "10-12": "Antonie",
+    "2.6.2023": {name: "Jarmil"},
+    "3.7.2023": {name: "Tamara"},
+    "6.8.2023": {name: "Norbert"},
+    "11.9.2023": {name: "Bruno"},
+    "12.10.2023": {name: "Antonie"},
 };
